@@ -13,7 +13,7 @@ OUTPUT_FILE = Path("output") / "summary.xlsx"
 
 
 def is_empty_row(row):
-    """判断一整行是否为空。"""
+    """行全体が空かどうかを判定する。"""
     return all(
         value is None or (isinstance(value, str) and not value.strip())
         for value in row
@@ -21,12 +21,12 @@ def is_empty_row(row):
 
 
 def read_excel(file_path):
-    """读取 Excel 第一张工作表，返回表头和数据行。"""
+    """Excel の先頭シートを読み込み、ヘッダーとデータ行を返す。"""
     workbook = None
     try:
         workbook = load_workbook(file_path, read_only=True, data_only=True)
         if not workbook.worksheets:
-            print(f"跳过空文件: {file_path.name}（没有工作表）")
+            print(f"空ファイルのためスキップ: {file_path.name}（シートがありません）")
             return None
 
         worksheet = workbook.active
@@ -44,21 +44,21 @@ def read_excel(file_path):
         EOFError,
         ParseError,
     ) as error:
-        print(f"跳过损坏或无法读取的文件: {file_path.name}（{error}）")
+        print(f"破損または読み取れないファイルのためスキップ: {file_path.name}（{error}）")
         return None
     finally:
         if workbook is not None:
             workbook.close()
 
     if not rows:
-        print(f"跳过空文件: {file_path.name}（第一张工作表没有内容）")
+        print(f"空ファイルのためスキップ: {file_path.name}（先頭シートに内容がありません）")
         return None
 
     return rows[0], rows[1:]
 
 
 def format_output(worksheet):
-    """给结果表添加少量基础格式，便于展示和阅读。"""
+    """結果シートに表示・閲覧用の基本書式を適用する。"""
     header_fill = PatternFill("solid", fgColor="1F4E78")
     header_font = Font(color="FFFFFF", bold=True)
 
@@ -80,7 +80,7 @@ def format_output(worksheet):
 
 
 def save_result(header, rows):
-    """把合并结果保存到 output/summary.xlsx。"""
+    """統合結果を output/summary.xlsx に保存する。"""
     output_workbook = Workbook()
     output_sheet = output_workbook.active
     output_sheet.title = "Summary"
@@ -95,7 +95,7 @@ def save_result(header, rows):
         OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
         output_workbook.save(OUTPUT_FILE)
     except OSError as error:
-        print(f"保存失败: {OUTPUT_FILE}（{error}）")
+        print(f"保存に失敗しました: {OUTPUT_FILE}（{error}）")
         return False
     finally:
         output_workbook.close()
@@ -105,12 +105,12 @@ def save_result(header, rows):
 
 def warn_if_old_output_exists():
     if OUTPUT_FILE.exists():
-        print(f"注意: 已有的 {OUTPUT_FILE} 是之前生成的，本次没有更新。")
+        print(f"注意：既存の {OUTPUT_FILE} は前回生成されたもので、今回は更新されていません。")
 
 
 def main():
     if not INPUT_DIR.exists():
-        print(f"未找到输入目录: {INPUT_DIR}")
+        print(f"入力フォルダーが見つかりません: {INPUT_DIR}")
         warn_if_old_output_exists()
         return 1
 
@@ -121,7 +121,7 @@ def main():
     )
 
     if not excel_files:
-        print(f"{INPUT_DIR} 目录中没有 .xlsx 文件。")
+        print(f"{INPUT_DIR} フォルダー内に .xlsx ファイルがありません。")
         warn_if_old_output_exists()
         return 1
 
@@ -132,7 +132,7 @@ def main():
     valid_file_count = 0
 
     for file_path in excel_files:
-        print(f"正在读取: {file_path.name}")
+        print(f"読み込み中: {file_path.name}")
         result = read_excel(file_path)
         if result is None:
             continue
@@ -142,14 +142,14 @@ def main():
         if header is None:
             header = current_header
         elif current_header != header:
-            print(f"跳过表头不一致的文件: {file_path.name}")
-            print(f"  期望表头: {list(header)}")
-            print(f"  实际表头: {list(current_header)}")
+            print(f"ヘッダーが一致しないためスキップ: {file_path.name}")
+            print(f"  期待されるヘッダー: {list(header)}")
+            print(f"  実際のヘッダー: {list(current_header)}")
             continue
 
         valid_file_count += 1
         if not data_rows:
-            print(f"提示: {file_path.name} 只有表头，没有数据行。")
+            print(f"ヒント： {file_path.name} はヘッダーのみで、データ行がありません。")
 
         original_count += len(data_rows)
         for row in data_rows:
@@ -158,7 +158,7 @@ def main():
                 unique_rows.append(row)
 
     if header is None:
-        print("没有找到可合并的 Excel 内容，未生成新输出文件。")
+        print("統合可能な Excel データが見つからず、新しい出力ファイルは生成されませんでした。")
         warn_if_old_output_exists()
         return 1
 
@@ -169,11 +169,11 @@ def main():
     duplicate_count = original_count - unique_count
 
     print()
-    print(f"有效文件数: {valid_file_count}/{len(excel_files)}")
-    print(f"原始行数: {original_count}")
-    print(f"去重后行数: {unique_count}")
-    print(f"删除重复数: {duplicate_count}")
-    print(f"完成！输出文件: {OUTPUT_FILE}")
+    print(f"有効ファイル数: {valid_file_count}/{len(excel_files)}")
+    print(f"統合前の行数: {original_count}")
+    print(f"統合後の行数: {unique_count}")
+    print(f"除外した重複行数: {duplicate_count}")
+    print(f"完了！出力ファイル: {OUTPUT_FILE}")
     return 0
 
 
