@@ -28,7 +28,7 @@
 ## ディレクトリ構成
 
 ```text
-demo_excel_tool/
+excel-batch-automation/
 ├─ input/
 │  ├─ sales_01.xlsx
 │  ├─ sales_02.xlsx
@@ -55,7 +55,7 @@ demo_excel_tool/
 Windows PowerShell でプロジェクトフォルダーに移動し、仮想環境と依存パッケージを準備します。
 
 ```powershell
-cd path\to\demo_excel_tool
+cd path\to\excel-batch-automation
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
