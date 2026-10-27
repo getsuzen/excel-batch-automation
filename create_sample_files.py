@@ -47,11 +47,11 @@ def main():
             header,
             [5, "Emma", "Osaka", 1700],
             [6, "Frank", "Fukuoka", 1600],
-            [1, "Alice", "Tokyo", 1200],  # 与 sales_01.xlsx 中一行重复
+            [1, "Alice", "Tokyo", 1200],  # sales_01.xlsx の1行と重複
         ],
     )
 
-    print("测试 Excel 文件生成完成（共 7 行数据，其中 1 行重复）。")
+    print("テスト用 Excel ファイルの生成が完了しました（全7行のデータ、うち1行が重複）。")
 
 
 if __name__ == "__main__":
